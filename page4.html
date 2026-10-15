@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作者生平介绍</title>
+    <link rel="icon" href="https://img.icons8.com/?size=160&id=dTCjnKgREI23&format=png" type="image/png">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "宋体", "Microsoft Yahei", serif;
+        }
+        body {
+            background-color: #fdfaf5;
+            color: #2d2620;
+            line-height: 2;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 3rem;
+            border: 1px solid #e8e0d5;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2.5rem;
+            font-weight: bold;
+            color: #8a5a44;
+            outline: none;
+            min-height: 2.4em;
+        }
+        .intro {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            color: #665448;
+            outline: none;
+            min-height: 2em;
+        }
+        .life-section {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+        .life-text {
+            flex: 2;
+        }
+        .life-img {
+            flex: 1;
+            min-width: 200px;
+        }
+        .life-img img,
+        .img-box {
+            width: 100%;
+            min-height: 220px;
+            margin-top: 65px;
+            border-radius: 6px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            border: 1px solid #f0e6d8;
+            background: #f9f5f0;
+            display: block;
+            object-fit: cover;
+        }
+        h2 {
+            font-size: 1.6rem;
+            margin: 3rem 0 1rem;
+            font-weight: bold;
+            color: #8a5a44;
+            border-bottom: 1px solid #e8e0d5;
+            padding-bottom: 0.5rem;
+            outline: none;
+        }
+        .life-text h2 {
+            margin-top: 0;
+        }
+        p {
+            margin: 0.8rem 0;
+            text-indent: 2em;
+            font-size: 1.4rem;
+            outline: none;
+            min-height: 2.4em;
+        }
+        .no-indent {
+            text-indent: 0;
+        }
+        .marked {
+            position: relative;
+        }
+        .spec {
+            display: block;
+            font-family: "Microsoft Yahei", sans-serif;
+            font-size: 12px;
+            font-weight: normal;
+            line-height: 1.5;
+            color: #b08968;
+            background: #f4ebe3;
+            border: 1px dashed #d9c4b0;
+            border-radius: 4px;
+            padding: 0.15rem 0.5rem;
+            margin-bottom: 0.35rem;
+            text-indent: 0;
+            text-align: left;
+            letter-spacing: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+        .img-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .img-box .spec {
+            margin: 0 0.6rem;
+            text-align: center;
+        }
+        .poem-wrap {
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            background-color: #f9f5f0;
+            padding: 1.5rem;
+            border-radius: 6px;
+        }
+        .poem-img,
+        .poem-wrap .img-box {
+            width: 80%;
+            max-width: 500px;
+            min-height: 200px;
+            border-radius: 6px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            border: 1px solid #f0e6d8;
+            background: #fff;
+            display: block;
+            object-fit: cover;
+            margin-top: 0;
+        }
+        .poem-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            color: #704c38;
+            outline: none;
+            min-height: 1.8em;
+        }
+        .poem {
+            margin-left: 1rem;
+            white-space: pre-line;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #5a4335;
+            outline: none;
+            min-width: 60%;
+            min-height: 4em;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .life-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .life-img img,
+            .img-box {
+                margin-top: 0;
+            }
+            .poem-img,
+            .poem-wrap .img-box {
+                width: 100%;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+    <style>
+        .export-btn {
+            position: fixed;
+            right: max(16px, calc((100% - 1000px) / 2 - 88px));
+            top: 50%;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
+            letter-spacing: 0.35em;
+            padding: 1.2rem 0.7rem;
+            background: #8a5a44;
+            color: #fffdf8;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 20;
+        }
+        .export-btn:hover {
+            background: #704c38;
+        }
+        @media (max-width: 1200px) {
+            .export-btn {
+                right: 12px;
+                writing-mode: horizontal-tb;
+                letter-spacing: 0.12em;
+                top: 16px;
+                transform: none;
+                padding: 0.5rem 0.9rem;
+            }
+        }
+        @media print {
+            .export-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <button type="button" class="export-btn" id="exportBtn">导出</button>
+    <div class="container" id="page">
+        <span class="spec">主标题 · 宋体 · 2rem（32px）加粗 · 居中</span>
+        <h1 class="no-indent" contenteditable="true"></h1>
+        <span class="spec">一句话介绍 · 宋体 · 1.5rem（24px） · 居中</span>
+        <div class="intro no-indent" contenteditable="true"></div>
+
+        <div class="life-section">
+            <div class="life-text">
+                <span class="spec">阶段标题 · 宋体 · 1.6rem（26px）加粗 · 左对齐</span>
+                <h2 class="no-indent" contenteditable="true"></h2>
+                <span class="spec">正文 · 宋体 · 1.4rem（22px） · 左对齐 · 首行缩进2字</span>
+                <p contenteditable="true"></p>
+            </div>
+            <div class="life-img">
+                <div class="img-box"><span class="spec">图片框 · 右侧 · 宽100% · 上边距65px</span></div>
+            </div>
+        </div>
+
+        <div class="life-section">
+            <div class="life-img">
+                <div class="img-box"><span class="spec">图片框 · 左侧 · 宽100% · 上边距65px</span></div>
+            </div>
+            <div class="life-text">
+                <span class="spec">阶段标题 · 宋体 · 1.6rem（26px）加粗 · 左对齐</span>
+                <h2 class="no-indent" contenteditable="true"></h2>
+                <span class="spec">正文 · 宋体 · 1.4rem（22px） · 左对齐 · 首行缩进2字</span>
+                <p contenteditable="true"></p>
+                <span class="spec">正文 · 宋体 · 1.4rem（22px） · 左对齐 · 首行缩进2字</span>
+                <p contenteditable="true"></p>
+            </div>
+        </div>
+
+        <div class="life-section">
+            <div class="life-text">
+                <span class="spec">阶段标题 · 宋体 · 1.6rem（26px）加粗 · 左对齐</span>
+                <h2 class="no-indent" contenteditable="true"></h2>
+                <span class="spec">正文 · 宋体 · 1.4rem（22px） · 左对齐 · 首行缩进2字</span>
+                <p contenteditable="true"></p>
+            </div>
+            <div class="life-img">
+                <div class="img-box"><span class="spec">图片框 · 右侧 · 宽100% · 上边距65px</span></div>
+            </div>
+        </div>
+
+        <div class="life-section">
+            <div class="life-img">
+                <div class="img-box"><span class="spec">图片框 · 左侧 · 宽100% · 上边距65px</span></div>
+            </div>
+            <div class="life-text">
+                <span class="spec">阶段标题 · 宋体 · 1.6rem（26px）加粗 · 左对齐</span>
+                <h2 class="no-indent" contenteditable="true"></h2>
+                <span class="spec">正文 · 宋体 · 1.4rem（22px） · 左对齐 · 首行缩进2字</span>
+                <p contenteditable="true"></p>
+            </div>
+        </div>
+
+        <span class="spec">板块标题 · 宋体 · 1.6rem（26px）加粗 · 左对齐</span>
+        <h2 class="no-indent" style="margin-top: 3rem;" contenteditable="true"></h2>
+
+        <div class="poem-wrap">
+            <div class="img-box poem-img"><span class="spec">诗作配图 · 居中 · 宽80% · 最大500px</span></div>
+            <span class="spec">诗题 · 宋体 · 1.5rem（24px）加粗 · 居中</span>
+            <div class="poem-title no-indent" contenteditable="true"></div>
+            <span class="spec">诗句 · 宋体 · 1.1rem（18px） · 居中</span>
+            <div class="poem" contenteditable="true"></div>
+        </div>
+
+        <div class="poem-wrap">
+            <div class="img-box poem-img"><span class="spec">诗作配图 · 居中 · 宽80% · 最大500px</span></div>
+            <span class="spec">诗题 · 宋体 · 1.5rem（24px）加粗 · 居中</span>
+            <div class="poem-title no-indent" contenteditable="true"></div>
+            <span class="spec">诗句 · 宋体 · 1.1rem（18px） · 居中</span>
+            <div class="poem" contenteditable="true"></div>
+        </div>
+
+        <div class="poem-wrap">
+            <div class="img-box poem-img"><span class="spec">诗作配图 · 居中 · 宽80% · 最大500px</span></div>
+            <span class="spec">诗题 · 宋体 · 1.5rem（24px）加粗 · 居中</span>
+            <div class="poem-title no-indent" contenteditable="true"></div>
+            <span class="spec">诗句 · 宋体 · 1.1rem（18px） · 居中</span>
+            <div class="poem" contenteditable="true"></div>
+        </div>
+
+        <div class="poem-wrap">
+            <div class="img-box poem-img"><span class="spec">诗作配图 · 居中 · 宽80% · 最大500px</span></div>
+            <span class="spec">诗题 · 宋体 · 1.5rem（24px）加粗 · 居中</span>
+            <div class="poem-title no-indent" contenteditable="true"></div>
+            <span class="spec">诗句 · 宋体 · 1.1rem（18px） · 居中</span>
+            <div class="poem" contenteditable="true"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("exportBtn").addEventListener("click", function () {
+            var page = document.getElementById("page").cloneNode(true);
+            page.querySelectorAll("[contenteditable]").forEach(function (el) {
+                el.removeAttribute("contenteditable");
+            });
+            page.querySelectorAll(".spec").forEach(function (el) {
+                el.remove();
+            });
+            var styles = document.querySelectorAll("style")[0].textContent;
+            var titleEl = page.querySelector("h1");
+            var title = (titleEl && titleEl.textContent.trim()) || "作者生平介绍";
+            var html = "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>" +
+                title.replace(/</g, "") +
+                "</title>\n<style>\n" + styles + "\n</style>\n</head>\n<body>\n" +
+                page.outerHTML +
+                "\n</body>\n</html>";
+            var blob = new Blob([html], { type: "text/html;charset=utf-8" });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = title + ".html";
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    </script>
+</body>
+</html>
