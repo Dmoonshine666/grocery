@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报纸风｜生活小报 小红书竖版</title>
+    <link rel="icon" href="https://img.icons8.com/?size=160&id=111271&format=png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #e9e9e9;
+            padding: 20px;
+            font-family: "SimSun", "宋体", serif;
+        }
+        .control-bar {
+            max-width: 750px;
+            margin: 0 auto 18px;
+            text-align: center;
+        }
+        #downloadImg {
+            padding: 11px 30px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #downloadImg:hover {
+            background: #444;
+        }
+        /* 报纸画布 750×1000 3:4 */
+        .newspaper {
+            width: 750px;
+            height: 1000px;
+            background-color: #f7f3e9;
+            margin: 0 auto;
+            padding: 32px;
+            border: 2px solid #222;
+        }
+        /* 报纸报头 */
+        .news-header {
+            border-bottom: 2.4px solid #222;
+            padding-bottom:14px;
+            margin-bottom:22px;
+        }
+        .newspaper-subtitle{
+            text-align: center;
+    font-size: 14px;
+    color: #555;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #222;
+    position: relative;
+    z-index: 2;
+        }
+        .news-top-info {
+            display: flex;
+            justify-content: space-between;
+            font-size:15px;
+            margin-bottom:8px;
+        }
+        .news-title-main {
+            text-align:center;
+            font-size:42px;
+            font-weight:bold;
+            letter-spacing:6px;
+        }
+        /* 上下两大板块 */
+        .news-content-wrap {
+            height: calc(100% - 140px);
+            display:flex;
+            flex-direction:column;
+            gap:28px;
+        }
+        .section-title {
+            font-size:22px;
+            font-weight:bold;
+            padding-bottom:8px;
+            /* 修改：浅灰色虚线 →实线  */
+            border-bottom:1px solid #505050;
+            margin-bottom:12px;
+            letter-spacing: 4px;
+        }
+        .edit-box {
+            flex:1;
+            outline:none;
+            font-size:18px;
+            line-height:1.65;
+            white-space:pre-wrap;
+            word-break:break-all;
+            /* 强制统一字体，粘贴内容也会继承 */
+            font-family: "SimSun", "宋体", serif !important;
+        }
+        .block-1 {
+            flex:1;
+        }
+        .block-2 {
+            flex:1;
+        }
+        /* 编辑选中高亮提示，可删掉 */
+        [contenteditable="true"]:focus {
+            background-color:#fff8dd;
+        }
+        /* 强制清除粘贴带入的字体样式，统一覆盖 */
+        .edit-box * {
+            font-family: "SimSun", "宋体", serif !important;
+            font-size:18px !important;
+            line-height:1.65 !important;
+            color:#111 !important;
+        }
+    </style>
+</head>
+<body>
+<div class="control-bar">
+    <button id="downloadImg">📷 导出小报图片</button>
+</div>
+
+<div class="newspaper" id="printDom">
+    <div class="news-header">
+        <div class="news-top-info">
+            <span contenteditable="true">第0x期</span>
+            <span contenteditable="true">202x.xx.xx</span>
+        </div>
+        <div class="news-title-main" contenteditable="true">
+            <span class="red" style="color: #9a2222;">生</span>
+            活
+            <span class="red" style="color: #9a2222;">小</span>
+            报
+        </div>
+        
+    </div>
+
+    <div class="news-content-wrap">
+        <!-- 上方：正规资讯原文 -->
+        <div class="block-1">
+            <div class="section-title" contenteditable="true">📰今日资讯</div>
+            <div class="edit-box" contenteditable="true">
+
+</div>
+        </div>
+
+        <!-- 下方：大白话通俗解读 -->
+        <div class="block-2">
+            <div class="section-title" contenteditable="true">💡通俗解读</div>
+            <div class="edit-box" contenteditable="true">
+
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const btn = document.querySelector("#downloadImg");
+    const targetDom = document.querySelector("#printDom");
+    btn.onclick = async () => {
+        btn.innerText = "图片生成中…";
+        btn.disabled = true;
+        try{
+            const canvas = await html2canvas(targetDom,{
+                scale:2,
+                useCORS:true,
+                backgroundColor:"#f7f3e9"
+            })
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL("image/png");
+            a.download = "报纸风生活小报.png";
+            a.click();
+        }catch(e){
+            alert("导出失败："+e)
+        }
+        btn.innerText = "📷 导出小报图片";
+        btn.disabled = false;
+    }
+
+    // 粘贴时自动清除粘贴文本自带样式，保证字体统一
+    document.querySelectorAll('.edit-box').forEach(elem=>{
+        elem.addEventListener('paste', function(e){
+            e.preventDefault();
+            const text = e.clipboardData.getData('text/plain');
+            document.execCommand('insertText', false, text);
+        })
+    })
+</script>
+</body>
+</html>
