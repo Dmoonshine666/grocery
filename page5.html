@@ -3,190 +3,746 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报纸风｜生活小报 小红书竖版</title>
+    <title>报纸风｜生活小报 双页版（封面 + 内容）</title>
     <link rel="icon" href="https://img.icons8.com/?size=160&id=111271&format=png" type="image/png">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
+        /* ============ 字体 / 色彩变量（对齐《字体规范》） ============ */
+        :root {
+            --serif: "Noto Serif SC", "STZhongsong", "Songti SC", "SimSun", serif;
+            --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+            --paper-cover: #F5F0E4;
+            --paper-inner: #FBF6EA;
+
+            --ink: #1F1D1A;
+            --ink-body: #2B2823;
+            --ink-sub: #3A3630;
+            --ink-note: #7A736A;
+            --red: #A32D2D;
+
+            --rule: #1F1D1A;
+            --rule-light: #8F887B;
+            --rule-minor: #C9C1B1;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             background: #e9e9e9;
-            padding: 20px;
-            font-family: "SimSun", "宋体", serif;
+            padding: 20px 20px 40px;
+            font-family: var(--sans);
         }
-        .control-bar {
-            max-width: 750px;
-            margin: 0 auto 18px;
-            text-align: center;
+
+        /* ============ 顶部工具栏（不参与导出） ============ */
+        .toolbar {
+            max-width: 1180px;
+            margin: 0 auto 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        #downloadImg {
-            padding: 11px 30px;
+
+        .toolbar > button {
+            padding: 10px 20px;
             background: #222;
             color: #fff;
             border: none;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 15px;
+            font-family: var(--sans);
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .toolbar > button:hover { background: #444; }
+        .toolbar > button:disabled { background: #999; cursor: default; }
+
+        .toolbar label {
+            font-size: 14px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 颜色工具条 */
+        .color-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #fff;
+            border: 1px solid #d5d5d5;
+            border-radius: 4px;
+        }
+
+        .color-tools .clabel {
+            font-size: 13px;
+            color: #666;
+            margin-right: 2px;
+        }
+
+        .dot {
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #c9c9c9;
             cursor: pointer;
         }
-        #downloadImg:hover {
-            background: #444;
+
+        .dot:hover { box-shadow: 0 0 0 2px #666; }
+
+        #colorPick {
+            width: 30px;
+            height: 26px;
+            padding: 0;
+            border: 1px solid #c9c9c9;
+            border-radius: 3px;
+            background: #fff;
+            cursor: pointer;
         }
-        /* 报纸画布 750×1000 3:4 */
-        .newspaper {
-            width: 750px;
-            height: 1000px;
-            background-color: #f7f3e9;
-            margin: 0 auto;
-            padding: 32px;
-            border: 2px solid #222;
+
+        #colorReset {
+            padding: 5px 12px;
+            font-size: 13px;
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #d5d5d5;
+            border-radius: 3px;
+            cursor: pointer;
         }
-        /* 报纸报头 */
-        .news-header {
-            border-bottom: 2.4px solid #222;
-            padding-bottom:14px;
-            margin-bottom:22px;
-        }
-        .newspaper-subtitle{
+
+        #colorReset:hover { background: #e4e4e4; }
+
+        .status {
+            max-width: 900px;
+            margin: 0 auto 12px;
+            min-height: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #a8332b;
             text-align: center;
-    font-size: 14px;
-    color: #555;
-    letter-spacing: 3px;
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-    border-bottom: 2px solid #222;
-    position: relative;
-    z-index: 2;
         }
-        .news-top-info {
+
+        /* ============ 画布舞台 ============ */
+        .viewport { position: relative; overflow: hidden; }
+
+        .stage {
+            position: relative;
+            display: flex;
+            gap: 56px;
+            width: max-content;
+            transform-origin: top center;
+        }
+
+        /* ============ 单页画布 1080 × 1440 ============ */
+        .poster {
+            position: relative;
+            width: 1080px;
+            height: 1440px;
+            padding: 72px;
+            border: 2px solid var(--ink);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+
+        .poster.is-cover { background: var(--paper-cover); }
+        .poster.is-inner { background: var(--paper-inner); }
+
+        /* 期号 / 日期 */
+        .top-line {
             display: flex;
             justify-content: space-between;
-            font-size:15px;
-            margin-bottom:8px;
+            font-family: var(--sans);
+            font-size: 24px;
+            font-weight: 400;
+            line-height: 1.2;
+            letter-spacing: .05em;
+            color: var(--ink-sub);
+            margin-bottom: 24px;
         }
-        .news-title-main {
-            text-align:center;
-            font-size:42px;
-            font-weight:bold;
-            letter-spacing:6px;
+
+        /* ============ 左页：封面报头 ============ */
+        .masthead {
+            font-family: var(--serif);
+            font-size: 88px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: .5em;
+            text-indent: .5em;
+            text-align: center;
+            color: var(--ink);
+            margin-bottom: 40px;   /* 横线离字更远 */
         }
-        /* 上下两大板块 */
-        .news-content-wrap {
-            height: calc(100% - 140px);
-            display:flex;
-            flex-direction:column;
-            gap:28px;
+
+        .masthead .red { color: var(--red); }
+
+        .rule-thick {
+            height: 5px;
+            background: var(--rule);
+            margin-bottom: 40px;
         }
-        .section-title {
-            font-size:22px;
-            font-weight:bold;
-            padding-bottom:8px;
-            /* 修改：浅灰色虚线 →实线  */
-            border-bottom:1px solid #505050;
-            margin-bottom:12px;
-            letter-spacing: 4px;
+
+        /* 红字小标 */
+        .kicker {
+            font-family: var(--sans);
+            font-size: 26px;
+            font-weight: 600;
+            line-height: 1.6;
+            letter-spacing: .08em;
+            color: var(--red);
+            margin-bottom: 24px;
+            outline: none;
         }
+
+        /* 封面主标题：字距行距更舒展 */
+        .cover-title {
+            font-family: var(--serif);
+            font-size: 118px;
+            font-weight: 900;
+            line-height: 1.32;
+            letter-spacing: .04em;
+            padding-left: .04em;
+            color: var(--ink);
+            margin-bottom: 34px;
+            outline: none;
+            max-height: calc(118px * 1.32 * 2 + 8px);   /* 最多 2 行 */
+        }
+
+        .cover-title .red { color: var(--red); }
+
+        .cover-sub {
+            font-family: var(--serif);
+            font-size: 40px;
+            font-weight: 500;
+            line-height: 1.62;
+            letter-spacing: .04em;
+            color: var(--ink-sub);
+            outline: none;
+        }
+
+        .cover-spacer { flex: 1; min-height: 24px; }
+
+        .cover-foot {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 40px;
+            padding-top: 26px;
+            border-top: 1px solid var(--rule-light);
+        }
+
+        .cover-foot .note {
+            font-family: var(--sans);
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1.8;
+            letter-spacing: .02em;
+            color: var(--ink-note);
+            outline: none;
+        }
+
+        .stamp {
+            flex: 0 0 auto;
+            width: 132px;
+            height: 132px;
+            border: 5px solid var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--red);
+            font-family: var(--serif);
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            transform: rotate(-8deg);
+            text-indent: .04em;
+        }
+
+        /* ============ 右页：改版报头（横式 + 双线 + 编号栏目） ============ */
+        .is-inner .top-line {
+            font-size: 22px;
+            margin-bottom: 14px;
+        }
+
+        .inner-head { margin-bottom: 34px; }
+
+        .inner-head-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .inner-masthead {
+            font-family: var(--serif);
+            font-size: 46px;
+            font-weight: 700;
+            line-height: 1.25;
+            letter-spacing: .22em;
+            color: var(--ink);
+            outline: none;
+        }
+
+        .inner-masthead .red { color: var(--red); }
+
+        .inner-tag {
+            font-family: var(--sans);
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 1.4;
+            letter-spacing: .18em;
+            color: var(--ink-note);
+            white-space: nowrap;
+            outline: none;
+        }
+
+        /* 粗细双线 */
+        .rule-double { margin-top: 14px; }
+        .rule-double span { display: block; }
+        .rule-double .r1 { height: 3px; background: var(--rule); }
+        .rule-double .r2 { height: 1px; background: var(--rule); margin-top: 5px; }
+
+        .body-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 42px;
+            min-height: 0;
+        }
+
+        .section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* 资讯原文通常短、通俗解读通常长，按 4:6 分配高度 */
+        .body-wrap .section:nth-child(1) { flex: 0.82; }
+        .body-wrap .section:nth-child(2) { flex: 1.18; }
+
+        /* 栏目标题：编号方块 + 标题 */
+        .sec-head {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .sec-num {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            height: 40px;
+            padding: 0 10px;
+            background: var(--red);
+            color: #fff;
+            font-family: var(--sans);
+            font-size: 21px;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: .08em;
+            text-indent: .08em;
+            outline: none;
+        }
+
+        /* 第二栏用描边方块，打破整齐感 */
+        .sec-num.is-outline {
+            background: transparent;
+            color: var(--red);
+            box-shadow: inset 0 0 0 2px var(--red);
+        }
+
+        .sec-txt {
+            font-family: var(--serif);
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: .1em;
+            color: var(--ink);
+            outline: none;
+        }
+
+        .sec-rule {
+            height: 1px;
+            background: var(--rule-light);
+            margin-bottom: 24px;
+        }
+
+        /* 正文 */
         .edit-box {
-            flex:1;
-            outline:none;
-            font-size:18px;
-            line-height:1.65;
-            white-space:pre-wrap;
-            word-break:break-all;
-            /* 强制统一字体，粘贴内容也会继承 */
-            font-family: "SimSun", "宋体", serif !important;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            outline: none;
+            font-family: var(--sans);
+            font-size: 30px;
+            font-weight: 400;
+            line-height: 1.78;
+            letter-spacing: .02em;
+            color: var(--ink-body);
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        .block-1 {
-            flex:1;
-        }
-        .block-2 {
-            flex:1;
-        }
-        /* 编辑选中高亮提示，可删掉 */
-        [contenteditable="true"]:focus {
-            background-color:#fff8dd;
-        }
-        /* 强制清除粘贴带入的字体样式，统一覆盖 */
+
+        /* 统一字体，但不锁颜色（保留改色能力） */
         .edit-box * {
-            font-family: "SimSun", "宋体", serif !important;
-            font-size:18px !important;
-            line-height:1.65 !important;
-            color:#111 !important;
+            font-family: var(--sans) !important;
+            font-size: 30px !important;
+            line-height: 1.78 !important;
+            letter-spacing: .02em !important;
+        }
+
+        .source-row {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--rule-minor);
+            font-family: var(--sans);
+            font-size: 20px;
+            font-weight: 400;
+            line-height: 1.8;
+            letter-spacing: .02em;
+            color: var(--ink-note);
+            outline: none;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: rgba(255, 248, 221, .6);
+        }
+
+        .is-overflow {
+            box-shadow: inset 0 0 0 2px #d9534f !important;
+            background: rgba(217, 83, 79, .05) !important;
         }
     </style>
 </head>
 <body>
-<div class="control-bar">
-    <button id="downloadImg">📷 导出小报图片</button>
+
+<div class="toolbar">
+    <button data-export="left">导出左图（封面）</button>
+    <button data-export="right">导出右图（内容）</button>
+    <button data-export="both">合并导出（双页）</button>
+    <label><input type="checkbox" id="fitChk" checked> 适应窗口预览</label>
 </div>
 
-<div class="newspaper" id="printDom">
-    <div class="news-header">
-        <div class="news-top-info">
-            <span contenteditable="true">第0x期</span>
-            <span contenteditable="true">202x.xx.xx</span>
-        </div>
-        <div class="news-title-main" contenteditable="true">
-            <span class="red" style="color: #9a2222;">生</span>
-            活
-            <span class="red" style="color: #9a2222;">小</span>
-            报
-        </div>
-        
+<div class="toolbar">
+    <div class="color-tools">
+        <span class="clabel">文字颜色</span>
+        <button class="dot" data-color="#1F1D1A" style="background:#1F1D1A" title="墨黑"></button>
+        <button class="dot" data-color="#A32D2D" style="background:#A32D2D" title="强调红"></button>
+        <button class="dot" data-color="#2B2823" style="background:#2B2823" title="正文墨"></button>
+        <button class="dot" data-color="#6B5B45" style="background:#6B5B45" title="褐色"></button>
+        <button class="dot" data-color="#2F5D50" style="background:#2F5D50" title="墨绿"></button>
+        <button class="dot" data-color="#7A736A" style="background:#7A736A" title="灰"></button>
+        <input type="color" id="colorPick" value="#1F1D1A" title="自定义颜色">
+        <button id="colorReset">还原默认</button>
     </div>
-
-    <div class="news-content-wrap">
-        <!-- 上方：正规资讯原文 -->
-        <div class="block-1">
-            <div class="section-title" contenteditable="true">📰今日资讯</div>
-            <div class="edit-box" contenteditable="true">
-
+    <span style="font-size:12px;color:#888;">选中文字改局部，未选中改整块</span>
 </div>
-        </div>
 
-        <!-- 下方：大白话通俗解读 -->
-        <div class="block-2">
-            <div class="section-title" contenteditable="true">💡通俗解读</div>
-            <div class="edit-box" contenteditable="true">
+<div class="status" id="status"></div>
 
-</div>
-        </div>
+<div class="viewport" id="viewport">
+    <div class="stage" id="stage">
+
+        <!-- ==================== 左页：封面 ==================== -->
+        <section class="poster is-cover" id="posterLeft">
+            <div class="top-line">
+                <span contenteditable="true" spellcheck="false">第 01 期</span>
+                <span contenteditable="true" spellcheck="false">2026.10.21</span>
+            </div>
+
+            <div class="masthead" contenteditable="true" spellcheck="false"><span class="red">生活</span>小报</div>
+
+            <div class="rule-thick"></div>
+
+            <div class="kicker" contenteditable="true" spellcheck="false">民生政策 · 社保</div>
+
+            <h1 class="cover-title" contenteditable="true" spellcheck="false">社保基数<span class="red">上调</span><br>你的钱这样变</h1>
+
+            <p class="cover-sub" contenteditable="true" spellcheck="false">一句话说清：多缴的钱去哪了，退休能多领多少。</p>
+
+            <div class="cover-spacer"></div>
+
+            <div class="cover-foot">
+                <div class="note" contenteditable="true" spellcheck="false">来源：人社部官网<br></div>
+                <div class="stamp">大白话</div>
+            </div>
+        </section>
+
+        <!-- ==================== 右页：内容（报头改版） ==================== -->
+        <section class="poster is-inner" id="posterRight">
+            <div class="top-line">
+                
+            </div>
+
+            <div class="inner-head">
+                <div class="inner-head-top">
+                    <div class="inner-masthead" contenteditable="true" spellcheck="false"><span class="red">生活</span>小报</div>
+                    <div class="inner-tag" contenteditable="true" spellcheck="false">民生版 · DAILY</div>
+                </div>
+                <div class="rule-double">
+                    <span class="r1"></span>
+                </div>
+            </div>
+
+            <div class="body-wrap">
+                <!-- 上方：正规资讯原文 -->
+                <div class="section">
+                    <div class="sec-head">
+    
+                        <span class="sec-txt" contenteditable="true" spellcheck="false">📰今日资讯</span>
+                    </div>
+                    <div class="sec-rule"></div>
+                    <div class="edit-box" contenteditable="true" spellcheck="false" data-label="今日资讯">在此粘贴资讯原文（建议≤240字）。
+多缴多得的规则从本月起调整，缴费基数下限由原来的社平工资60%保持不变，上限同步上调。
+参保单位需在本月20日前完成申报，逾期按上月基数顺延。</div>
+                </div>
+
+                <!-- 下方：大白话通俗解读 -->
+                <div class="section">
+                    <div class="sec-head">
+                        
+                        <span class="sec-txt" contenteditable="true" spellcheck="false">💡通俗解读</span>
+                    </div>
+                    <div class="sec-rule"></div>
+                    <div class="edit-box" contenteditable="true" spellcheck="false" data-label="通俗解读">一句话：现在多缴一点，退休后每月多领一点。
+重点看三件事：① 到手工资金额可能变少；② 医保个人账户同步增加；③ 断缴会影响买房买车资格。
+别慌，基数上调不是扣钱，是存进你自己的养老账户。</div>
+                </div>
+            </div>
+
+            <div class="source-row" contenteditable="true" spellcheck="false">来源：人社部官网 · 2026.10.21 发布</div>
+        </section>
+
     </div>
 </div>
 
 <script>
-    const btn = document.querySelector("#downloadImg");
-    const targetDom = document.querySelector("#printDom");
-    btn.onclick = async () => {
-        btn.innerText = "图片生成中…";
-        btn.disabled = true;
-        try{
-            const canvas = await html2canvas(targetDom,{
-                scale:2,
-                useCORS:true,
-                backgroundColor:"#f7f3e9"
-            })
-            const a = document.createElement('a');
-            a.href = canvas.toDataURL("image/png");
-            a.download = "报纸风生活小报.png";
-            a.click();
-        }catch(e){
-            alert("导出失败："+e)
+(function () {
+    const stage = document.getElementById('stage');
+    const viewport = document.getElementById('viewport');
+    const statusEl = document.getElementById('status');
+    const fitChk = document.getElementById('fitChk');
+    const posterLeft = document.getElementById('posterLeft');
+    const posterRight = document.getElementById('posterRight');
+    const buttons = Array.from(document.querySelectorAll('.toolbar button[data-export]'));
+    const colorPick = document.getElementById('colorPick');
+
+    const SCALE = 2;
+    const GAP = 56;
+
+    /* ---------- 预览缩放 ---------- */
+    function applyFit() {
+        if (!fitChk.checked) {
+            stage.style.left = '0';
+            stage.style.transform = 'none';
+            viewport.style.height = 'auto';
+            viewport.style.overflowX = 'auto';
+            viewport.style.overflowY = 'hidden';
+            return;
         }
-        btn.innerText = "📷 导出小报图片";
-        btn.disabled = false;
+        viewport.style.overflowX = 'hidden';
+        const totalW = 1080 * 2 + GAP + 8;
+        const avail = viewport.clientWidth || document.documentElement.clientWidth;
+        const s = Math.min(1, (avail - 8) / totalW);
+        stage.style.left = '50%';
+        stage.style.transform = 'translateX(-50%) scale(' + s + ')';
+        viewport.style.height = Math.ceil(1440 * s + 8) + 'px';
+    }
+    fitChk.addEventListener('change', applyFit);
+    window.addEventListener('resize', applyFit);
+    applyFit();
+
+    /* ---------- 超框检测 ---------- */
+    function checkOverflow() {
+        const msgs = [];
+        document.querySelectorAll('.edit-box, .cover-title, .cover-sub, .kicker').forEach(function (el) {
+            const lh = parseFloat(getComputedStyle(el).lineHeight) || 40;
+            const over = el.scrollHeight - el.clientHeight;
+            if (over > lh * 0.3) {
+                el.classList.add('is-overflow');
+                const label = el.dataset.label || (el.classList.contains('cover-title') ? '封面主标题' : el.classList.contains('cover-sub') ? '封面副标题' : '封面小标');
+                msgs.push(label + ' 超出约 ' + Math.max(1, Math.round(over / lh)) + ' 行');
+            } else {
+                el.classList.remove('is-overflow');
+            }
+        });
+        statusEl.textContent = msgs.length ? '⚠ ' + msgs.join('；') + ' —— 请精简文案，不要靠缩字号解决' : '';
+    }
+    document.addEventListener('input', checkOverflow);
+    setTimeout(checkOverflow, 300);
+
+    /* ---------- 粘贴纯文本 ---------- */
+    document.addEventListener('paste', function (e) {
+        const target = e.target.closest && e.target.closest('[contenteditable="true"]');
+        if (!target) return;
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+        checkOverflow();
+    });
+
+    /* ---------- 文字颜色 ---------- */
+    let activeEditable = null;
+    let savedRange = null;
+
+    document.addEventListener('focusin', function (e) {
+        const t = e.target.closest && e.target.closest('[contenteditable="true"]');
+        if (t) activeEditable = t;
+    });
+
+    document.addEventListener('selectionchange', function () {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        if (activeEditable && activeEditable.contains(sel.anchorNode)) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    });
+
+    function hasSelection() {
+        return !!(savedRange && activeEditable && !savedRange.collapsed &&
+            activeEditable.contains(savedRange.commonAncestorContainer));
     }
 
-    // 粘贴时自动清除粘贴文本自带样式，保证字体统一
-    document.querySelectorAll('.edit-box').forEach(elem=>{
-        elem.addEventListener('paste', function(e){
-            e.preventDefault();
-            const text = e.clipboardData.getData('text/plain');
-            document.execCommand('insertText', false, text);
-        })
-    })
+    function applyColor(hex) {
+        if (!activeEditable) {
+            alert('请先点一下要改色的文字区域');
+            return;
+        }
+        if (hasSelection()) {
+            const sel = window.getSelection();
+            activeEditable.focus();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('foreColor', false, hex);
+        } else {
+            activeEditable.style.color = hex;   // 未选中：整块改色
+        }
+        checkOverflow();
+    }
+
+    function resetColor() {
+        if (!activeEditable) return;
+        if (hasSelection()) {
+            const sel = window.getSelection();
+            activeEditable.focus();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+            document.execCommand('removeFormat');
+        }
+        activeEditable.style.color = '';
+        activeEditable.querySelectorAll('span[style]').forEach(function (s) {
+            if (s.style.color) s.style.color = '';
+        });
+        checkOverflow();
+    }
+
+    document.querySelectorAll('.dot').forEach(function (d) {
+        d.addEventListener('click', function () {
+            colorPick.value = d.dataset.color;
+            applyColor(d.dataset.color);
+        });
+    });
+
+    colorPick.addEventListener('input', function () { applyColor(colorPick.value); });
+    document.getElementById('colorReset').addEventListener('click', resetColor);
+
+    /* ---------- 截图 ---------- */
+    async function shot(el) {
+        stage.style.left = '0';
+        stage.style.transform = 'none';
+        viewport.style.overflow = 'visible';
+        viewport.style.height = 'auto';
+        document.querySelectorAll('.is-overflow').forEach(function (n) { n.classList.remove('is-overflow'); });
+        await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+
+        try {
+            return await html2canvas(el, {
+                scale: SCALE,
+                useCORS: true,
+                backgroundColor: getComputedStyle(el).backgroundColor,
+                width: el.offsetWidth,
+                height: el.offsetHeight,
+                windowWidth: document.documentElement.scrollWidth,
+                logging: false
+            });
+        } finally {
+            applyFit();
+            checkOverflow();
+        }
+    }
+
+    function download(canvas, filename) {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = filename;
+        a.click();
+    }
+
+    function stampName(base) {
+        const d = new Date();
+        const p = function (n) { return String(n).padStart(2, '0'); };
+        return base + '_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.png';
+    }
+
+    async function mergeBoth() {
+        const a = await shot(posterLeft);
+        const b = await shot(posterRight);
+        const out = document.createElement('canvas');
+        out.width = a.width + b.width;
+        out.height = Math.max(a.height, b.height);
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#F5F0E4';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(a, 0, 0);
+        ctx.drawImage(b, a.width, 0);
+        return out;
+    }
+
+    async function run(kind, btn) {
+        const raw = btn.textContent;
+        buttons.forEach(function (b) { b.disabled = true; });
+        btn.textContent = '生成中…';
+        try {
+            if (kind === 'left') {
+                download(await shot(posterLeft), stampName('生活小报_封面'));
+            } else if (kind === 'right') {
+                download(await shot(posterRight), stampName('生活小报_内容'));
+            } else {
+                download(await mergeBoth(), stampName('生活小报_双页'));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('导出失败：' + err.message + '\n\n请确认页面已完全加载（含字体、图片），或改用 Chrome 打开。');
+        } finally {
+            buttons.forEach(function (b) { b.disabled = false; });
+            btn.textContent = raw;
+        }
+    }
+
+    buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () { run(btn.dataset.export, btn); });
+    });
+})();
 </script>
 </body>
 </html>
